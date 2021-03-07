@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BodyCombat Tracks</title>
+    <script src="bc.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 10pt;
+        }
+        ul.tracks {
+            list-style-type: none;
+            padding-inline-start: 8px;
+        }
+        ul.opened {
+            padding-inline-start: 16px;
+            background-color: bisque;
+            border: 1px solid gray;
+            max-height: 200px;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+        li.track {
+            display: flex;
+        }
+        div.release {
+            font-weight: bold;
+            width: 8em;
+        }
+        div.option {
+            font-weight: normal;
+            font-size: 80%;
+            margin-left: 2em;
+        }
+        div.seconds {
+            width: 4em;
+            text-align: right;
+            font-size: 120%;
+        }
+        div.total {
+            font-size: 200%;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <main></main>
+    <script>
+        Elm.Main.init({node:document.querySelector('main')})
+    </script>
+</body>
+</html>
