@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Utils exposing (nthOrFirst)
+import Utils exposing (nthOrFirst, secsToString)
 
 import Browser
 import Html exposing (..)
@@ -96,13 +96,20 @@ totalSeconds : List Track -> Maybe Int
 totalSeconds tracks =
     List.foldl maybeAdd (Just 0) (List.map (\t -> t.seconds) tracks)
 
+zeroSecondsToNothing : Track -> Track
+zeroSecondsToNothing t =
+    case t.seconds of
+       Just 0 -> {t | seconds = Nothing}
+       _ -> t
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         GotData result ->
             case result of
-                Ok tracks ->
+                Ok tracksWithZeroSeconds ->
                     let
+                        tracks = List.map zeroSecondsToNothing tracksWithZeroSeconds
                         selected = selectedTracks tracks
                         seconds = totalSeconds selected 
                     in
@@ -145,13 +152,15 @@ sortTracks a b =
        GT -> LT
        EQ -> compare a.alt b.alt
 
+emptyTrack : Track
+emptyTrack = Track 0 0 0 Nothing "" "" ""
+
 
 makeSelect : Model -> Int -> Html Msg
 makeSelect model id =
     let
-        selectedTrack = nthOrFirst model.selected id (Track 0 0 0 Nothing "" "" "")
+        selectedTrack = nthOrFirst model.selected id emptyTrack
         filteredTracks = List.filter (\t -> t.track == id) model.tracks
-        -- sortedTracks = List.sortBy .release filteredTracks
         sortedTracks = List.sortWith sortTracks filteredTracks
         isOpen = case model.opened of
            Just n -> n == id
@@ -159,26 +168,18 @@ makeSelect model id =
     in
         ul [ classList [("tracks", True), ("opened", isOpen)]]
             (if isOpen then
-                (List.map makeOption sortedTracks)
+                (List.map (makeOption selectedTrack) sortedTracks)
             else
-                [makeOption selectedTrack]
+                [makeOption emptyTrack selectedTrack]
             )
 
 
-secsToString : Maybe Int -> String
-secsToString secs =
-    case secs of
-        Just seconds ->
-            let
-                rem = modBy 60 seconds
-                minutes = (seconds - rem) // 60
-            in
-                (String.fromInt minutes) ++ ":" ++ (String.padLeft 2 '0' (String.fromInt rem))
-        Nothing -> ""
 
-makeOption : Track -> Html Msg
-makeOption track =
-    li [class "track", onClick (LiClicked track)]
+makeOption : Track -> Track -> Html Msg
+makeOption selected track =
+    li [ classList [("track", True), ("selected", selected.release == track.release && selected.alt == track.alt)]
+       , onClick (LiClicked track)
+       ]
         [ div [class "release"]
             [ div [] [text ("Release " ++ track.name)]
             , div [class "option"] (if track.alt /= 0 then [text ("Option " ++ (String.fromInt track.alt))] else [])
